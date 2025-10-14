@@ -65,3 +65,8 @@ function sendResultToAdmin(name, group, number) {
   .then(msg => console.log("Gửi thành công:", msg))
   .catch(err => console.error("Lỗi gửi:", err));
 }
+
+function doGet(e) {
+  return ContentService.createTextOutput("Web App is running")
+    .setMimeType(ContentService.MimeType.TEXT);
+}
