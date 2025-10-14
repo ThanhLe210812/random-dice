@@ -1,61 +1,54 @@
+const urlParams = new URLSearchParams(window.location.search);
+const userName = urlParams.get("user");
+
 let availableNumbers = [1, 2, 3, 4, 5, 6];
+let usedNumbers = JSON.parse(localStorage.getItem("usedNumbers")) || {};
+let assignedNumber = usedNumbers[userName];
 
 window.onload = function () {
-  const storedName = localStorage.getItem("playerName");
-  const usedNumbers = JSON.parse(localStorage.getItem("usedNumbers")) || [];
-
-  // Cập nhật danh sách số còn lại
-  availableNumbers = availableNumbers.filter(n => !usedNumbers.includes(n));
-
-  if (storedName) {
-    document.getElementById("username").value = storedName;
-    document.getElementById("username").disabled = true;
+  if (!userName) {
+    document.getElementById("result").textContent = "❌ Không có tên người dùng trong link!";
     document.getElementById("rollBtn").disabled = true;
-    document.getElementById("result").textContent = `👋 Chào ${storedName}, bạn đã quay rồi!`;
+    return;
+  }
+
+  if (assignedNumber) {
+    document.getElementById("result").textContent = `👋 ${userName} đã quay số: ${assignedNumber}`;
+    document.getElementById("rollBtn").disabled = true;
   }
 };
 
 function rollDice() {
-  const nameInput = document.getElementById("username");
-  const name = nameInput.value.trim();
+  if (assignedNumber) return;
 
-  if (!name) {
-    alert("Vui lòng nhập tên trước khi quay!");
-    return;
-  }
+  // Loại bỏ số đã dùng
+  const used = Object.values(usedNumbers);
+  const remaining = availableNumbers.filter(n => !used.includes(n));
 
-  const storedName = localStorage.getItem("playerName");
-  if (storedName === name) {
-    alert("Tên này đã quay rồi. Vui lòng nhập tên mới!");
-    return;
-  }
-
-  if (availableNumbers.length === 0) {
+  if (remaining.length === 0) {
     document.getElementById("result").textContent = "🎉 Tất cả số đã được quay!";
     return;
   }
 
-  // Random số từ danh sách còn lại
-  const index = Math.floor(Math.random() * availableNumbers.length);
-  const number = availableNumbers[index];
-
-  // Hiển thị kết quả
-  document.getElementById("result").textContent = `🎉 ${name} quay được số: ${number}`;
-
-  // Lưu tên và số đã dùng
-  localStorage.setItem("playerName", name);
-  const usedNumbers = JSON.parse(localStorage.getItem("usedNumbers")) || [];
-  usedNumbers.push(number);
+  const number = remaining[Math.floor(Math.random() * remaining.length)];
+  usedNumbers[userName] = number;
   localStorage.setItem("usedNumbers", JSON.stringify(usedNumbers));
 
-  // Khóa lại
-  nameInput.disabled = true;
+  document.getElementById("result").textContent = `🎉 ${userName} quay được số: ${number}`;
   document.getElementById("rollBtn").disabled = true;
+
+  // Gửi kết quả về người quản lý
+  sendResultToAdmin(userName, number);
 }
 
-function resetGame() {
-  document.getElementById("username").value = "";
-  document.getElementById("username").disabled = false;
-  document.getElementById("rollBtn").disabled = false;
-  document.getElementById("result").textContent = "Bạn có thể nhập tên mới để quay!";
+function sendResultToAdmin(name, number) {
+  const webhookURL = "https://script.google.com/macros/s/AKfycbzfh48L7NEG7nezPArcMdeMBRkJdx14eNgGs6hqjiliuigrxAYHmidw-8vWlOgEw2I6/exec"; // Google Apps Script URL
+  fetch(webhookURL, {
+    method: "POST",
+    body: JSON.stringify({ name, number }),
+    headers: { "Content-Type": "application/json" }
+  })
+  .then(res => res.text())
+  .then(msg => console.log("Gửi thành công:", msg))
+  .catch(err => console.error("Lỗi gửi:", err));
 }
