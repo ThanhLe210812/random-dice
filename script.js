@@ -54,7 +54,7 @@ function rollDice() {
 
 // Gửi kết quả về Web App Google Apps Script
 function sendResultToAdmin(name, group, number) {
-  const webhookURL = "https://script.google.com/macros/s/AKfycbzfh48L7NEG7nezPArcMdeMBRkJdx14eNgGs6hqjiliuigrxAYHmidw-8vWlOgEw2I6/exec"; // Thay bằng URL thật của bạn
+  const webhookURL = "https://script.google.com/macros/s/AKfycbzG6aj5XBrW8g_tTzg-ZpLrFlp6-19kpYdxUqPdHjo5dLn-k8IQUWqvcaqoeKZnGWWa/exec"; // Thay bằng URL thật của bạn
 
   fetch(webhookURL, {
     method: "POST",
